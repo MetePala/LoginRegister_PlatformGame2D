@@ -1,0 +1,4 @@
+repository "Project1_RegisterLogin_PlatformGame@metepala98@cloud"
+  path "/"
+    br "/main"
+    co "/main"
