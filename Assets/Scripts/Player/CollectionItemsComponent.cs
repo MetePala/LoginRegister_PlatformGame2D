@@ -30,6 +30,7 @@ public class CollectionItemsComponent : MonoBehaviour
         }
         if (col.gameObject.CompareTag("Finish"))
         {
+            PlayerPrefs.SetInt("level", 2);
             PlayerPrefs.SetInt("Diamond", _diamond);
             SceneManager.LoadScene(3);
         }

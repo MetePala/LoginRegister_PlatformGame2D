@@ -34,6 +34,9 @@ public class SwitchScenes : MonoBehaviour
     public void ReStartGame()
     {
         Time.timeScale = 1;
-        SceneManager.LoadScene(2);
+        if (PlayerPrefs.GetInt("level") == 1)
+            SceneManager.LoadScene(2);
+        else
+            SceneManager.LoadScene(3);
     }
 }

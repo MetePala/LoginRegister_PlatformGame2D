@@ -5,6 +5,7 @@ using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine.SceneManagement;
+using System.Text.RegularExpressions;
 
 public class LoginRegister : MonoBehaviour
 {
@@ -30,7 +31,6 @@ public class LoginRegister : MonoBehaviour
     [SerializeField] Toggle _saveUser;
 
     public static string _playerID;
-    string guestID;
     private void Awake()
     {
         _usernameAndEmailLogin.text= PlayerPrefs.GetString("emailOrUsername");
@@ -40,12 +40,15 @@ public class LoginRegister : MonoBehaviour
     private void Start()
     {
         SwitchLoginOrRegister();
+        RegisterControls();
+        LoginControls();
     }
 
     #region RegisterLogin System
 
     public void LoginEmail()
     {
+        _resultText.text = "Logging In...";
         PlayFabClientAPI.LoginWithEmailAddress(new LoginWithEmailAddressRequest()
         {
             Email = _usernameAndEmailLogin.text,
@@ -54,13 +57,17 @@ public class LoginRegister : MonoBehaviour
         },
         Result =>
         {
+           
             Debug.Log("Giris basarili");
             _playerID = Result.PlayFabId;
             SceneManager.LoadScene(1);
+            
+            
         },
         Error =>
         {
             Debug.Log("Giris Basarisiz");
+            _resultText.text = "The email or password incorrect!";
 
         });
     }
@@ -68,6 +75,7 @@ public class LoginRegister : MonoBehaviour
 
     public void LoginUsername()
     {
+        _resultText.text = "Logging In...";
         PlayFabClientAPI.LoginWithPlayFab(new LoginWithPlayFabRequest()
         {
             Username = _usernameAndEmailLogin.text,
@@ -76,6 +84,7 @@ public class LoginRegister : MonoBehaviour
         },
         Result =>
         {
+            
             Debug.Log("Giris basarili");
             _playerID =  Result.PlayFabId;
             SceneManager.LoadScene(1);
@@ -83,26 +92,29 @@ public class LoginRegister : MonoBehaviour
         Error =>
         {
             Debug.Log("Giris Basarisiz");
+            _resultText.text = "The username or password incorrect!";
 
         }); ;
     }
 
     public void SwitchLoginType()
     {
-        if (_saveUser.isOn == true)
             RememberMe();
-
-        if (_usernameAndEmailLogin.text.IndexOf('@') > 0)
+        if (_usernameAndEmailLogin.text.IndexOf('@') > 0 && _usernameAndEmailLogin.text.IndexOf('.') > 0)
             LoginEmail();
 
         else
             LoginUsername();
+
+        PlayerPrefs.SetInt("Diamond", 0);
+        PlayerPrefs.SetInt("level", 1);
 
     }
 
 
     public void Register()
     {
+        _resultText.text = "Registering User...";
         PlayFabClientAPI.RegisterPlayFabUser(new RegisterPlayFabUserRequest()
         {
             Username = _usernameRegister.text,
@@ -113,23 +125,35 @@ public class LoginRegister : MonoBehaviour
         Result =>
         {
             Debug.Log("Kayit basarili");
-           
-
+            StartCoroutine(RegisterLoad());
         },
         Error =>
         {
             Debug.Log("Kayit Basarisiz");
-           
+            _resultText.text = "Registration Failed!";
         }); ;
 
+    }
+    IEnumerator RegisterLoad()
+    {
+        _resultText.text = "Registration Success";
+        yield return new WaitForSeconds(1f);
+        _usernameAndEmailLogin.text=_usernameRegister.text;
+        _passwordLogin.text = _passwordRegister.text;
+        _registerPanel.SetActive(false);
+        _resultText.text = "";
+        _loginPanel.SetActive(true);
     }
 
     public void RememberMe()
     {
 
-        
-        PlayerPrefs.SetString("emailOrUsername", _usernameAndEmailLogin.text);
-        PlayerPrefs.SetString("passowrd", _passwordLogin.text);
+        if(_saveUser.isOn)
+        {
+            PlayerPrefs.SetString("emailOrUsername", _usernameAndEmailLogin.text);
+            PlayerPrefs.SetString("passowrd", _passwordLogin.text);
+        }
+       
 
     }
 
@@ -185,6 +209,36 @@ public class LoginRegister : MonoBehaviour
         }
     }
 
+
+    public void RegisterControls()
+    {
+        if (_emailRegister.text.IndexOf('@') < 0 || _emailRegister.text.IndexOf('.') < 0 || _passwordRegister.text != _repeatPasswordRegister.text || _passwordRegister.text.Length < 6 )
+        {
+            _RegisterButton.interactable = false;
+
+        }
+        else
+        {
+            _RegisterButton.interactable = true;
+        }
+        _usernameRegister.text = Regex.Replace(_usernameRegister.text, "[^\\w\\._]", "");
+        _usernameRegister.text = Regex.Replace(_usernameRegister.text, "[ç, ý, ü, ð, ö, þ, Ý, Ð, Ü, Ö, Þ, Ç,.]", "");
+        _passwordRegister.text = Regex.Replace(_passwordRegister.text, "[ç, ý, ü, ð, ö, þ, Ý, Ð, Ü, Ö, Þ, Ç]", "");
+    }
+    public void LoginControls()
+    {
+        if ( _passwordLogin.text.Length < 6)
+        {
+            _LoginButton.interactable = false;
+
+        }
+        else
+        {
+            _LoginButton.interactable = true;
+        }
+
+        _passwordLogin.text = Regex.Replace(_passwordLogin.text, "[ç, ý, ü, ð, ö, þ, Ý, Ð, Ü, Ö, Þ, Ç]", "");
+    }
 
     #endregion
 

@@ -28,6 +28,17 @@ public class EditPlayerInfo : MonoBehaviour
         StartCoroutine(second1());
         GetDisplayName();
         StartCoroutine(baslat());
+        if(Input.GetKey(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+        }
+    }
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+        }
     }
     IEnumerator second1()
     {
@@ -213,6 +224,9 @@ public class EditPlayerInfo : MonoBehaviour
 
     public void Startgame()
     {
+       if (PlayerPrefs.GetInt("level")==1)
         SceneManager.LoadScene(2);
+       else
+         SceneManager.LoadScene(3);
     }
 }
